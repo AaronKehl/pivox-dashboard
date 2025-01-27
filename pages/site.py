@@ -89,9 +89,7 @@ def plot_chart( data, plot_var_1="", plot_var_2="" , open_date="", close_date=""
 
 st.set_page_config( page_title="Freeman", page_icon="👋" )
 st.write("# Freeman Pivox, Idaho City, ID")
-left_link, mid_link, right_link = st.columns(3)
-left_link.page_link( "dashboard.py", label="Dashboard" )
-mid_link.page_link( "pages/images.py", label="Images" )
+st.page_link("dashboard.py", label="Dashboard" )
 
 data = read_idrive().decode( 'iso8859_2' )
 csvfile = io.StringIO( data )
