@@ -75,7 +75,7 @@ def read_idrive( open_date="", close_date="" ):
 st.set_page_config( page_title="Freeman", page_icon="👋" )
 st.write("# Freeman Pivox, Idaho City, ID")
 link_left, link_mid = st.columns( 2 )
-link_left.page_link( "freeman.py" , label="Back" )
+link_left.page_link( "pages/freeman.py" , label="Back" )
 link_mid.page_link( "dashboard.py", label="Dashboard" )
 
 bot_left, bot_middle, bot_right = st.columns( 3, vertical_alignment = "bottom" )
