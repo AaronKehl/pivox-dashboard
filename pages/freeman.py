@@ -37,8 +37,8 @@ def plot_chart( data, plot_var_1="", plot_var_2="" , open_date="", close_date=""
     if open_date is None or open_date == "": open_date = datetime( 2020, 3, 9, 0, 0, 0)
     else: open_date = datetime( open_date.year, open_date.month, open_date.day, 0, 0, 0 )
     if close_date is None or close_date == "": close_date = datetime.now
-    else: close_date = datetime( close_date.year, close_date.month, close_date.day, 0, 0, 0 )
-
+    else: close_date = datetime( close_date.year, close_date.month, close_date.day, 23, 59, 59 )
+    
     if plot_var_1 != "" or plot_var_2 != "":
 
         csvfile = io.StringIO( data )
