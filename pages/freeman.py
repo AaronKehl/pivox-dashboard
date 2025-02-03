@@ -1,7 +1,7 @@
 import streamlit as st
 import csv
 import gzip
-from datetime import datetime
+from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
 import boto3
@@ -127,7 +127,8 @@ plot_var_1 = top_left.selectbox( "Select Variable 1", [""] + var_names )
 plot_var_2 = top_right.selectbox( "Select Variable 2", [""] + var_names )
 
 bot_left, bot_middle, bot_right = st.columns( 3, vertical_alignment = "bottom" )
-open_date = bot_left.date_input( "Begin Date", value = None )
+default_open = datetime.now() - timedelta( days = 7 )
+open_date = bot_left.date_input( "Begin Date", value = default_open )
 close_date = bot_middle.date_input( "End Date", value = "today" )
 if bot_right.button( "Plot Chart", use_container_width=True):
     plot_chart( data, plot_var_1, plot_var_2, open_date, close_date )
