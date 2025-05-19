@@ -14,7 +14,7 @@ def read_idrive():
                      aws_secret_access_key = st.secrets["secret"],
                      endpoint_url = st.secrets["endpoint"],
                      )
-    data = idrive.get_object( Bucket="pivox", Key="freeman/telemetry/freeman-master.csv.gz" )
+    data = idrive.get_object( Bucket="pivox", Key="boise/freeman/telemetry/freeman-master.csv.gz" )
     contents = gzip.decompress( data['Body'].read() )
     return contents
 

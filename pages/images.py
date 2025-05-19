@@ -23,9 +23,9 @@ def read_idrive( open_date="", close_date="" ):
 
     # grab photo names from bucket, but parse down to between open/close dates
     image_show = []
-    for image in idrive.list_objects( Bucket="pivox", Prefix="freeman/photos/" )["Contents"]:
+    for image in idrive.list_objects( Bucket="pivox", Prefix="boise/freeman/photos/" )["Contents"]:
         try:
-            filename = image["Key"].strip( "freeman/photos/" )
+            filename = image["Key"].strip( "boise/freeman/photos/" )
             timestamp = datetime.strptime( filename[:filename.find(".")], '%Y%m%d-%H%M-%S' )
             if timestamp >= open_date and timestamp <= close_date: image_show.append( filename )
         except: pass
@@ -66,7 +66,7 @@ def read_idrive( open_date="", close_date="" ):
     index = 0
     for col in row_data:
         tile = col.container(height=180)
-        data = idrive.get_object( Bucket="pivox", Key="freeman/photos/"+image_show[index] )
+        data = idrive.get_object( Bucket="pivox", Key="boise/freeman/photos/"+image_show[index] )
         image_file = data['Body'].read()
         caption = image_show[index][:image_show[index].find(".")]
         tile.image( image_file, caption )
