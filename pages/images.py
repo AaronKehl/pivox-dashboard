@@ -21,15 +21,33 @@ def read_idrive( open_date="", close_date="" ):
                      endpoint_url = st.secrets["endpoint"],
                      )
 
-    # grab photo names from bucket, but parse down to between open/close dates
+
+    # grab photo names from bucket, but parse down to between open/close dates first 1000 files.
     image_show = []
-    for image in idrive.list_objects( Bucket="pivox", Prefix="boise/freeman/photos/" )["Contents"]:
+    images = idrive.list_objects_v2( Bucket="pivox", Prefix="/boise/freeman/photos/" )
+    for image in images["Contents"]:
         try:
             filename = image["Key"].strip( "boise/freeman/photos/" )
             timestamp = datetime.strptime( filename[:filename.find(".")], '%Y%m%d-%H%M-%S' )
             if timestamp >= open_date and timestamp <= close_date: image_show.append( filename )
         except: pass
+            #idrive.delete_object( Bucket="pivox", Key="/boise/freeman/photos/"+"", IfMatchSize=0 )
+            #print( image[ "ETag" ] )
     
+    # loop through listings if > 1000 files
+    while images['IsTruncated']:
+        images = idrive.list_objects_v2( 
+                        Bucket="pivox", 
+                        Prefix="/boise/freeman/photos/", 
+                        ContinuationToken=images['NextContinuationToken'] 
+                    )
+        for image in images["Contents"]:
+            try:
+                filename = image["Key"].strip( "boise/freeman/photos/" )
+                timestamp = datetime.strptime( filename[:filename.find(".")], '%Y%m%d-%H%M-%S' )
+                if timestamp >= open_date and timestamp <= close_date: image_show.append( filename )
+            except: pass
+
    # images=[]
     #fo#r image_name in image_show:
       #  data = idrive.get_object( Bucket="pivox", Key="freeman/photos/"+image_show[0] )

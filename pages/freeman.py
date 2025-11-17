@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
 import boto3
-from st_files_connection import FilesConnection
 import io
 
 def read_idrive():
