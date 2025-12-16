@@ -137,5 +137,5 @@ if __name__ == "__main__":
     close_date = bot_middle.date_input( "End Date", value = "today" )
     if bot_right.button( "Plot Chart", use_container_width=True):
         plot_chart( data, plot_var_1, plot_var_2, open_date, close_date )
-
+    st.image( "img/freeman-z-boxes-image.png", caption="Zones A-F as shown." )
     #st.write( "You selected:", var_names )
