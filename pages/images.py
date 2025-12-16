@@ -91,10 +91,11 @@ def read_idrive( open_date="", close_date="" ):
         index += 1
 
 st.set_page_config( page_title="Freeman", page_icon="👋" )
-st.write("# Freeman Pivox, Idaho City, ID")
+st.write( "# Freeman Pivox Images" )
 link_left, link_mid, link_right = st.columns( 3 )
 link_left.page_link( "dashboard.py", label="Dashboard" )
 link_mid.page_link( "pages/freeman.py" , label="Telemetry" )
+link_right.page_link( "pages/levels.py", label="Z Level" )
 
 bot_left, bot_middle, bot_right = st.columns( 3, vertical_alignment = "bottom" )
 default_open = datetime.now() - timedelta( days = 7 )

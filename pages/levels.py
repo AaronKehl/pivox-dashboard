@@ -13,7 +13,8 @@ def read_idrive():
                      aws_secret_access_key = st.secrets["secret"],
                      endpoint_url = st.secrets["endpoint"],
                      )
-    data = idrive.get_object( Bucket="pivox", Key="boise/freeman/telemetry/freeman-master.csv.gz" )
+        
+    data = idrive.get_object( Bucket="pivox", Key="boise/freeman/telemetry/freeman-master-depth.csv.gz" )
     contents = gzip.decompress( data['Body'].read() )
     return contents
 
@@ -55,7 +56,8 @@ def plot_chart( data, plot_var_1="", plot_var_2="" , open_date="", close_date=""
                     y1_units = row[ plot_var_1 ]
                     y2_units = row[ plot_var_2 ]
                 else:
-                    timestamp = datetime.strptime( row[ var_names[0] ] +" "+ row[ var_names[1] ], "%Y/%m/%d %H:%M:%S" )
+                    file_time = row[ var_names[0] ] 
+                    timestamp = datetime.strptime( file_time[:file_time.find(".")] , "%Y%m%d-%H%M-%S" )
                     if timestamp >= open_date and timestamp <= close_date:
                         try: y1_val = float( row[ plot_var_1 ] )
                         except: y1_val = row[ plot_var_1 ]
@@ -79,7 +81,8 @@ def plot_chart( data, plot_var_1="", plot_var_2="" , open_date="", close_date=""
                     x_units = row[ var_names[0] ] +" "+ row[ var_names[1] ]
                     y1_units = row[ plot_var_1 ]
                 else:
-                    timestamp = datetime.strptime( row[ var_names[0] ] +" "+ row[ var_names[1] ], "%Y/%m/%d %H:%M:%S" )
+                    file_time = row[ var_names[0] ] 
+                    timestamp = datetime.strptime( file_time[:file_time.find(".")] , "%Y%m%d-%H%M-%S" )
                     if timestamp >= open_date and timestamp <= close_date:
                         try: y1_val = float( row[ plot_var_1 ] )
                         except: y1_val = row[ plot_var_1 ]
@@ -98,7 +101,8 @@ def plot_chart( data, plot_var_1="", plot_var_2="" , open_date="", close_date=""
                     x_units = row[ var_names[0] ] +" "+ row[ var_names[1] ]
                     y2_units = row[ plot_var_2 ]
                 else:
-                    timestamp = datetime.strptime( row[ var_names[0] ] +" "+ row[ var_names[1] ], "%Y/%m/%d %H:%M:%S" )
+                    file_time = row[ var_names[0] ] 
+                    timestamp = datetime.strptime( file_time[:file_time.find(".")] , "%Y%m%d-%H%M-%S" )
                     if timestamp >= open_date and timestamp <= close_date:
                         try: y2_val = float( row[ plot_var_1 ] )
                         except: y2_val = row[ plot_var_2 ]
@@ -110,27 +114,28 @@ def plot_chart( data, plot_var_1="", plot_var_2="" , open_date="", close_date=""
             data_frame = pd.DataFrame( data )
             st.line_chart( data_frame, x="Timestamp", y=plot_var_2, height=500 )
 
-st.set_page_config( page_title="Freeman", page_icon="👋" )
-st.write("# Freeman Pivox Telemetry")
-left_link, mid_link, right_link = st.columns(3)
-left_link.page_link( "dashboard.py", label="Dashboard" )
-mid_link.page_link( "pages/images.py", label="Images" )
-right_link.page_link( "pages/levels.py", label="Z Level" )
+if __name__ == "__main__":
+    st.set_page_config( page_title="Freeman", page_icon="👋" )
+    st.write("# Freeman Pivox Z Level")
+    left_link, mid_link, right_link = st.columns(3)
+    left_link.page_link( "dashboard.py", label="Dashboard" )
+    mid_link.page_link( "pages/freeman.py", label="Telemetry")
+    right_link.page_link( "pages/images.py", label="Images" )
 
-data = read_idrive().decode( 'iso8859_2' )
-csvfile = io.StringIO( data )
-reader = csv.DictReader( csvfile, delimiter="," )
-var_names = reader.fieldnames
+    data = read_idrive().decode( 'iso8859_2' )
+    csvfile = io.StringIO( data )
+    reader = csv.DictReader( csvfile, delimiter="," )
+    var_names = reader.fieldnames
 
-top_left, top_right = st.columns( 2 )
-plot_var_1 = top_left.selectbox( "Select Variable 1", [""] + var_names )
-plot_var_2 = top_right.selectbox( "Select Variable 2", [""] + var_names )
+    top_left, top_right = st.columns( 2 )
+    plot_var_1 = top_left.selectbox( "Select Variable 1", [""] + var_names )
+    plot_var_2 = top_right.selectbox( "Select Variable 2", [""] + var_names )
 
-bot_left, bot_middle, bot_right = st.columns( 3, vertical_alignment = "bottom" )
-default_open = datetime.now() - timedelta( days = 7 )
-open_date = bot_left.date_input( "Begin Date", value = default_open )
-close_date = bot_middle.date_input( "End Date", value = "today" )
-if bot_right.button( "Plot Chart", use_container_width=True):
-    plot_chart( data, plot_var_1, plot_var_2, open_date, close_date )
+    bot_left, bot_middle, bot_right = st.columns( 3, vertical_alignment = "bottom" )
+    default_open = datetime.now() - timedelta( days = 7 )
+    open_date = bot_left.date_input( "Begin Date", value = default_open )
+    close_date = bot_middle.date_input( "End Date", value = "today" )
+    if bot_right.button( "Plot Chart", use_container_width=True):
+        plot_chart( data, plot_var_1, plot_var_2, open_date, close_date )
 
-#st.write( "You selected:", var_names )
+    #st.write( "You selected:", var_names )
