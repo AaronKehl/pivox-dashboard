@@ -7,7 +7,7 @@ import numpy as np
 from PIL import Image
 import base64
 
-def read_idrive( open_date="", close_date="" ):
+def read_idrive( open_date="", close_date="", bucket="pivox", owner="boise", site="freeman", dtype="" ):
     # fix date range to search
     if open_date is None or open_date == "": open_date = datetime( 2020, 3, 9, 0, 0, 0)
     else: open_date = datetime( open_date.year, open_date.month, open_date.day, 0, 0, 0 )
@@ -21,15 +21,18 @@ def read_idrive( open_date="", close_date="" ):
                      endpoint_url = st.secrets["endpoint"],
                      )
 
-
     # grab photo names from bucket, but parse down to between open/close dates first 1000 files.
     image_show = []
-    images = idrive.list_objects_v2( Bucket="pivox", Prefix="/boise/freeman/photos/" )
+    prefix = owner + "/" + site + "/photos/"
+    images = idrive.list_objects_v2( Bucket=bucket, Prefix=prefix)
     for image in images["Contents"]:
         try:
-            filename = image["Key"].strip( "boise/freeman/photos/" )
+            filename = image["Key"].replace( prefix, "" )
+            print( filename )
             timestamp = datetime.strptime( filename[:filename.find(".")], '%Y%m%d-%H%M-%S' )
-            if timestamp >= open_date and timestamp <= close_date: image_show.append( filename )
+            if timestamp >= open_date and timestamp <= close_date: 
+                image_show.append( filename )
+                #print( filename )
         except: pass
             #idrive.delete_object( Bucket="pivox", Key="/boise/freeman/photos/"+"", IfMatchSize=0 )
             #print( image[ "ETag" ] )
@@ -37,40 +40,16 @@ def read_idrive( open_date="", close_date="" ):
     # loop through listings if > 1000 files
     while images['IsTruncated']:
         images = idrive.list_objects_v2( 
-                        Bucket="pivox", 
-                        Prefix="/boise/freeman/photos/", 
+                        Bucket=bucket, 
+                        Prefix=prefix, 
                         ContinuationToken=images['NextContinuationToken'] 
                     )
         for image in images["Contents"]:
             try:
-                filename = image["Key"].strip( "boise/freeman/photos/" )
+                filename = image["Key"].replace( prefix, "" )
                 timestamp = datetime.strptime( filename[:filename.find(".")], '%Y%m%d-%H%M-%S' )
                 if timestamp >= open_date and timestamp <= close_date: image_show.append( filename )
             except: pass
-
-   # images=[]
-    #fo#r image_name in image_show:
-      #  data = idrive.get_object( Bucket="pivox", Key="freeman/photos/"+image_show[0] )
-     #   image_data = io.BytesIO( data['Body'].read() )
-    #    images.append( Image.open( image_data ) )
-
-    #gif_buffer = io.BytesIO()
-    #images[0].save(
-    #    gif_buffer,
-    #    save_all=True,
-    #    append_images=images[1:],
-    #    optimize=False,
-    #    duration=200,
-    #    loop=0
-    #)
-
-    #"""### gif from local file"""
-    #gif_buffer_mkdown = base64.b64encode( gif_buffer ).decode("utf-8")
-
-    #st.markdown(
-    #    f'<img src="data:{gif_buffer_mkdown};base64,{gif_buffer_mkdown}" alt="cat gif">',
-    #    unsafe_allow_html=True,
-    #)
 
     rows = []
     row_data = []
@@ -84,24 +63,28 @@ def read_idrive( open_date="", close_date="" ):
     index = 0
     for col in row_data:
         tile = col.container(height=180)
-        data = idrive.get_object( Bucket="pivox", Key="boise/freeman/photos/"+image_show[index] )
+        data = idrive.get_object( Bucket=bucket, Key=prefix+image_show[index] )
         image_file = data['Body'].read()
         caption = image_show[index][:image_show[index].find(".")]
         tile.image( image_file, caption )
         index += 1
 
-st.set_page_config( page_title="Freeman", page_icon="👋" )
-st.write( "# Freeman Pivox Images" )
-link_left, link_mid, link_right = st.columns( 3 )
-link_left.page_link( "dashboard.py", label="Dashboard" )
-link_mid.page_link( "pages/freeman.py" , label="Telemetry" )
-link_right.page_link( "pages/levels.py", label="Z Level" )
+if __name__ == "__main__":
+    params = st.query_params
+    site_name = params["site"][0:1].upper() + params["site"][1:]
+    
+    st.set_page_config( page_title=site_name, page_icon="📸" )
+    st.write("# " + site_name + " Pivox Images 📸")
+    link_left, link_mid, link_right = st.columns( 3 )
+    link_left.page_link( "dashboard.py", label="Dashboard" )
+    link_mid.page_link( "pages/telemetry.py" , label="Telemetry", query_params=params )
+    link_right.page_link( "pages/levels.py", label="Z Level", query_params=params )
 
-bot_left, bot_middle, bot_right = st.columns( 3, vertical_alignment = "bottom" )
-default_open = datetime.now() - timedelta( days = 7 )
-open_date = bot_left.date_input( "Begin Date", value = default_open )
-close_date = bot_middle.date_input( "End Date", value = "today" )
-#read_idrive( open_date, close_date )
+    bot_left, bot_middle, bot_right = st.columns( 3, vertical_alignment = "bottom" )
+    default_open = datetime.now() - timedelta( days = 7 )
+    open_date = bot_left.date_input( "Begin Date", value = default_open )
+    close_date = bot_middle.date_input( "End Date", value = "today" )
+    #read_idrive( open_date, close_date )
 
-if bot_right.button( "Show Images", use_container_width=True):
-    read_idrive( open_date, close_date )
+    if bot_right.button( "Show Images", use_container_width=True):
+        read_idrive( open_date, close_date, params["bucket"], params["owner"], params["site"], params["dtype"] )

@@ -1,21 +1,17 @@
-import streamlit as st
-import csv
-import gzip
+import csv, gzip, boto3, io, argparse
 from datetime import datetime, timedelta
+import streamlit as st
 import pandas as pd
-import numpy as np
-import boto3
-import io
 
-def read_idrive():
+def read_idrive( bucket="pivox", owner="boise", site="freeman", dtype="" ):
     idrive = boto3.client( "s3", 
                      aws_access_key_id = st.secrets["key"], 
                      aws_secret_access_key = st.secrets["secret"],
                      endpoint_url = st.secrets["endpoint"],
                      )
         
-    data = idrive.get_object( Bucket="pivox", Key="boise/freeman/telemetry/freeman-master-depth.csv.gz" )
-    contents = gzip.decompress( data['Body'].read() )
+    data = idrive.get_object( Bucket=bucket, Key=owner+"/"+site+"/telemetry/"+site+"-master-"+dtype+".csv.gz" )
+    contents = gzip.decompress( data['Body'].read() ).decode( 'iso8859_2' )
     return contents
 
 def screen_data( variable, value ):
@@ -115,27 +111,38 @@ def plot_chart( data, plot_var_1="", plot_var_2="" , open_date="", close_date=""
             st.line_chart( data_frame, x="Timestamp", y=plot_var_2, height=500 )
 
 if __name__ == "__main__":
-    st.set_page_config( page_title="Freeman", page_icon="👋" )
-    st.write("# Freeman Pivox Z Level")
+    params = st.query_params
+    site_name = params["site"][0:1].upper() + params["site"][1:]
+
+    # Set up the bones of the page
+    st.set_page_config( page_title=site_name, page_icon="📈" )
+    st.write("# " + site_name + " Pivox Z Level 📈")
     left_link, mid_link, right_link = st.columns(3)
     left_link.page_link( "dashboard.py", label="Dashboard" )
-    mid_link.page_link( "pages/freeman.py", label="Telemetry")
-    right_link.page_link( "pages/images.py", label="Images" )
+    mid_link.page_link( "pages/telemetry.py", label="Telemetry", query_params=params )
+    right_link.page_link( "pages/images.py", label="Images", query_params=params )
 
-    data = read_idrive().decode( 'iso8859_2' )
-    csvfile = io.StringIO( data )
-    reader = csv.DictReader( csvfile, delimiter="," )
-    var_names = reader.fieldnames
+    if params["dtype"] != "":
+        # Grab z Level data from master file.
+        data = read_idrive( params["bucket"], params["owner"], params["site"], params["dtype"] )
+        csvfile = io.StringIO( data )
+        reader = csv.DictReader( csvfile, delimiter="," )
+        var_names = reader.fieldnames
 
-    top_left, top_right = st.columns( 2 )
-    plot_var_1 = top_left.selectbox( "Select Variable 1", [""] + var_names )
-    plot_var_2 = top_right.selectbox( "Select Variable 2", [""] + var_names )
+        # Set up options for graphing variables contained in the levels file by open/close dates
+        top_left, top_right = st.columns( 2 )
+        plot_var_1 = top_left.selectbox( "Select Variable 1", [""] + var_names )
+        plot_var_2 = top_right.selectbox( "Select Variable 2", [""] + var_names )
+        bot_left, bot_middle, bot_right = st.columns( 3, vertical_alignment = "bottom" )
+        default_open = datetime.now() - timedelta( days = 7 )
+        open_date = bot_left.date_input( "Begin Date", value = default_open )
+        close_date = bot_middle.date_input( "End Date", value = "today" )
+        if bot_right.button( "Plot Chart", use_container_width=True):
+            plot_chart( data, plot_var_1, plot_var_2, open_date, close_date )
 
-    bot_left, bot_middle, bot_right = st.columns( 3, vertical_alignment = "bottom" )
-    default_open = datetime.now() - timedelta( days = 7 )
-    open_date = bot_left.date_input( "Begin Date", value = default_open )
-    close_date = bot_middle.date_input( "End Date", value = "today" )
-    if bot_right.button( "Plot Chart", use_container_width=True):
-        plot_chart( data, plot_var_1, plot_var_2, open_date, close_date )
-    st.image( "img/freeman-z-boxes-image.png", caption="Zones A-F as shown." )
+        # populate an image/description for the level page for a specific site
+        st.image( "img/"+params["owner"]+"-"+params["site"]+"-"+params["dtype"]+".png", caption="Depiction of where level is determined." )
+    else:
+        st.write("## No additional telemetry file exists for this site, main telemetry file only." )
+        
     #st.write( "You selected:", var_names )
