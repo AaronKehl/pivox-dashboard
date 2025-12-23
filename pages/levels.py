@@ -116,7 +116,7 @@ if __name__ == "__main__":
 
     # Set up the bones of the page
     st.set_page_config( page_title=site_name, page_icon="📈" )
-    st.write("# " + site_name + " Pivox Z Level 📈")
+    st.write("# 📈 " + site_name + " Pivox Z Level 📈")
     left_link, mid_link, right_link = st.columns(3)
     left_link.page_link( "dashboard.py", label="Dashboard" )
     mid_link.page_link( "pages/telemetry.py", label="Telemetry", query_params=params )
