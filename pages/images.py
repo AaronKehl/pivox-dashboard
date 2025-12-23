@@ -74,7 +74,7 @@ if __name__ == "__main__":
     site_name = params["site"][0:1].upper() + params["site"][1:]
     
     st.set_page_config( page_title=site_name, page_icon="📸" )
-    st.write("# 📸 " + site_name + " Pivox Images 📸")
+    st.write("# " + site_name + " Pivox Images 📸")
     link_left, link_mid, link_right = st.columns( 3 )
     link_left.page_link( "dashboard.py", label="Dashboard" )
     link_mid.page_link( "pages/telemetry.py" , label="Telemetry", query_params=params )
