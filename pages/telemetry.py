@@ -19,21 +19,16 @@ def read_idrive( bucket="pivox", owner="boise", site="freeman", dtype="" ):
 
 def screen_data( variable, value ):
     # Add acceptable min/max for screening data based on var?
+    data_passes = False
+
     try:
-        if int( value ) != -9999: return True
+        if ( int( value) != -9999 and int( value ) > -999999 and int( value ) < 999999 ) or \
+        value == "0b0" or value == "0b1" or \
+        value == "0b00" or value == "0b01" or \
+        value == "0b10" or value == "0b11":
+            data_passes = True      
     except: pass
-    try: 
-        if value == "0b0" or value == "0b1": return True
-    except: pass
-    try:
-        if value == "0b00" or value == "0b01" \
-            or value == "0b10" or value == "0b11":
-            return True
-    except: pass
-    try:
-        if int( value ) < -9999999 or int( value ) > 9999999: return True
-    except: pass
-    return False
+    return data_passes
 
 def plot_chart( data, plot_var_1="", plot_var_2="" , open_date="", close_date=""):
     if open_date is None or open_date == "": open_date = datetime( 2020, 3, 9, 0, 0, 0)
