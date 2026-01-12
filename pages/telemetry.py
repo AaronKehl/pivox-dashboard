@@ -67,7 +67,7 @@ def plot_chart( data, plot_var_1="", plot_var_2="" , open_date="", close_date=""
 
                 row_pos += 1
             data = { "Timestamp": x, plot_var_1: y1, plot_var_2: y2 }
-            data_frame = pd.DataFrame( data )
+            data_frame = pd.DataFrame( data, width="stretch", height="stretch" )
             st.line_chart( data_frame, x="Timestamp", y=[plot_var_1, plot_var_2], height=500 )
             
         elif plot_var_1 != "":
@@ -86,7 +86,7 @@ def plot_chart( data, plot_var_1="", plot_var_2="" , open_date="", close_date=""
                             y1.append( y1_val )
                 row_pos += 1
             data = { "Timestamp": x, plot_var_1: y1 }
-            data_frame = pd.DataFrame( data )
+            data_frame = pd.DataFrame( data, width="stretch", height="stretch" )
             st.line_chart( data_frame, x="Timestamp", y=plot_var_1, height=500 )
             
         else:
@@ -105,7 +105,7 @@ def plot_chart( data, plot_var_1="", plot_var_2="" , open_date="", close_date=""
                             y2.append( y2_val )
                 row_pos += 1
             data = { "Timestamp": x, plot_var_2: y2 }
-            data_frame = pd.DataFrame( data )
+            data_frame = pd.DataFrame( data, width="stretch", height="stretch" )
             st.line_chart( data_frame, x="Timestamp", y=plot_var_2, height=500 )
 
 if __name__ == "__main__":
