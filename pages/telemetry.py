@@ -31,7 +31,7 @@ def screen_data( variable, value ):
             return True
     except: pass
     try:
-        if value < -9999 or value > 9999999: return True
+        if int( value ) < -9999999 or int( value ) > 9999999: return True
     except: pass
     return False
 
