@@ -30,6 +30,9 @@ def screen_data( variable, value ):
             or value == "0b10" or value == "0b11":
             return True
     except: pass
+    try:
+        if value < -9999 or value > 9999999: return True
+    except: pass
     return False
 
 def plot_chart( data, plot_var_1="", plot_var_2="" , open_date="", close_date=""):
