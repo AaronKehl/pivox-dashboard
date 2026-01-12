@@ -68,7 +68,7 @@ def plot_chart( data, plot_var_1="", plot_var_2="" , open_date="", close_date=""
                 row_pos += 1
             data = { "Timestamp": x, plot_var_1: y1, plot_var_2: y2 }
             data_frame = pd.DataFrame( data )
-            st.line_chart( data_frame, x="Timestamp", y=[plot_var_1, plot_var_2], width="stretch", height="stretch" )
+            st.line_chart( data_frame, x="Timestamp", y=[plot_var_1, plot_var_2], width="stretch", height="stretch")
             
         elif plot_var_1 != "":
             y1=[]
