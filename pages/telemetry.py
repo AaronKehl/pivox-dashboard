@@ -7,13 +7,16 @@ import numpy as np
 import boto3
 import io
 
-def read_idrive( bucket="pivox", owner="boise", site="freeman", dtype="" ):
+def read_idrive( key_prefix="idrive", bucket="pivox", owner="boise", site="freeman", dtype="" ):
     idrive = boto3.client( "s3", 
-                     aws_access_key_id = st.secrets["key"], 
-                     aws_secret_access_key = st.secrets["secret"],
-                     endpoint_url = st.secrets["endpoint"],
+                     aws_access_key_id = st.secrets[key_prefix+"_key"], 
+                     aws_secret_access_key = st.secrets[key_prefix+"_secret"],
+                     endpoint_url = st.secrets[key_prefix+"_endpoint"],
                      )
-    data = idrive.get_object( Bucket=bucket, Key=owner+"/"+site+"/telemetry/"+site+"-master"+dtype+".csv.gz" )
+    if owner == "": 
+        data = idrive.get_object( Bucket=bucket, Key=site+"/telemetry/"+site+"-master"+dtype+".csv.gz" )
+    else: 
+        data = idrive.get_object( Bucket=bucket, Key=owner+"/"+site+"/telemetry/"+site+"-master"+dtype+".csv.gz" )
     contents = gzip.decompress( data['Body'].read() )
     return contents.decode( 'iso8859_2' )
 
@@ -53,18 +56,19 @@ def plot_chart( data, plot_var_1="", plot_var_2="" , open_date="", close_date=""
                     y1_units = row[ plot_var_1 ]
                     y2_units = row[ plot_var_2 ]
                 else:
-                    timestamp = datetime.strptime( row[ var_names[0] ] +" "+ row[ var_names[1] ], "%Y/%m/%d %H:%M:%S" )
-                    if timestamp >= open_date and timestamp <= close_date:
-                        try: y1_val = float( row[ plot_var_1 ] )
-                        except: y1_val = row[ plot_var_1 ]
-                        try: y2_val = float( row[ plot_var_2 ] )
-                        except: y2_val = row[ plot_var_2 ]
-                        if screen_data( row[ plot_var_1 ], y1_val ) \
-                            and screen_data( row[ plot_var_2 ], y2_val ):
-                            x.append( timestamp )
-                            y1.append( y1_val )
-                            y2.append( y2_val )
-
+                    try:
+                        timestamp = datetime.strptime( row[ var_names[0] ] +" "+ row[ var_names[1] ], "%Y/%m/%d %H:%M:%S" )
+                        if timestamp >= open_date and timestamp <= close_date:
+                            try: y1_val = float( row[ plot_var_1 ] )
+                            except: y1_val = row[ plot_var_1 ]
+                            try: y2_val = float( row[ plot_var_2 ] )
+                            except: y2_val = row[ plot_var_2 ]
+                            if screen_data( row[ plot_var_1 ], y1_val ) \
+                                and screen_data( row[ plot_var_2 ], y2_val ):
+                                x.append( timestamp )
+                                y1.append( y1_val )
+                                y2.append( y2_val )
+                    except: pass
                 row_pos += 1
             data = { "Timestamp": x, plot_var_1: y1, plot_var_2: y2 }
             data_frame = pd.DataFrame( data )
@@ -77,13 +81,15 @@ def plot_chart( data, plot_var_1="", plot_var_2="" , open_date="", close_date=""
                     x_units = row[ var_names[0] ] +" "+ row[ var_names[1] ]
                     y1_units = row[ plot_var_1 ]
                 else:
-                    timestamp = datetime.strptime( row[ var_names[0] ] +" "+ row[ var_names[1] ], "%Y/%m/%d %H:%M:%S" )
-                    if timestamp >= open_date and timestamp <= close_date:
-                        try: y1_val = float( row[ plot_var_1 ] )
-                        except: y1_val = row[ plot_var_1 ]
-                        if screen_data( row[ plot_var_1 ], y1_val ):
-                            x.append( timestamp )
-                            y1.append( y1_val )
+                    try:
+                        timestamp = datetime.strptime( row[ var_names[0] ] +" "+ row[ var_names[1] ], "%Y/%m/%d %H:%M:%S" )
+                        if timestamp >= open_date and timestamp <= close_date:
+                            try: y1_val = float( row[ plot_var_1 ] )
+                            except: y1_val = row[ plot_var_1 ]
+                            if screen_data( row[ plot_var_1 ], y1_val ):
+                                x.append( timestamp )
+                                y1.append( y1_val )
+                    except: pass
                 row_pos += 1
             data = { "Timestamp": x, plot_var_1: y1 }
             data_frame = pd.DataFrame( data )
@@ -96,13 +102,15 @@ def plot_chart( data, plot_var_1="", plot_var_2="" , open_date="", close_date=""
                     x_units = row[ var_names[0] ] +" "+ row[ var_names[1] ]
                     y2_units = row[ plot_var_2 ]
                 else:
-                    timestamp = datetime.strptime( row[ var_names[0] ] +" "+ row[ var_names[1] ], "%Y/%m/%d %H:%M:%S" )
-                    if timestamp >= open_date and timestamp <= close_date:
-                        try: y2_val = float( row[ plot_var_1 ] )
-                        except: y2_val = row[ plot_var_2 ]
-                        if screen_data( row[ plot_var_2 ], y2_val ):
-                            x.append( timestamp )
-                            y2.append( y2_val )
+                    try:
+                        timestamp = datetime.strptime( row[ var_names[0] ] +" "+ row[ var_names[1] ], "%Y/%m/%d %H:%M:%S" )
+                        if timestamp >= open_date and timestamp <= close_date:
+                            try: y2_val = float( row[ plot_var_1 ] )
+                            except: y2_val = row[ plot_var_2 ]
+                            if screen_data( row[ plot_var_2 ], y2_val ):
+                                x.append( timestamp )
+                                y2.append( y2_val )
+                    except: pass
                 row_pos += 1
             data = { "Timestamp": x, plot_var_2: y2 }
             data_frame = pd.DataFrame( data )
@@ -119,7 +127,7 @@ if __name__ == "__main__":
     mid_link.page_link( "pages/images.py", label="Images", query_params=params )
     right_link.page_link( "pages/levels.py", label="Z Level", query_params=params )
 
-    data = read_idrive( params["bucket"], params["owner"], params["site"] )
+    data = read_idrive( params["key_prefix"], params["bucket"], params["owner"], params["site"] )
     csvfile = io.StringIO( data )
     reader = csv.DictReader( csvfile, delimiter="," )
     var_names = reader.fieldnames

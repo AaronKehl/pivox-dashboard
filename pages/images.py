@@ -7,7 +7,7 @@ import numpy as np
 from PIL import Image
 import base64
 
-def read_idrive( open_date="", close_date="", bucket="pivox", owner="boise", site="freeman", dtype="" ):
+def read_idrive( open_date="", close_date="", key_prefix="idrive", bucket="pivox", owner="boise", site="freeman", dtype="" ):
     # fix date range to search
     if open_date is None or open_date == "": open_date = datetime( 2020, 3, 9, 0, 0, 0)
     else: open_date = datetime( open_date.year, open_date.month, open_date.day, 0, 0, 0 )
@@ -16,19 +16,19 @@ def read_idrive( open_date="", close_date="", bucket="pivox", owner="boise", sit
 
     # generate client session to cloud server
     idrive = boto3.client( "s3", 
-                     aws_access_key_id = st.secrets["key"], 
-                     aws_secret_access_key = st.secrets["secret"],
-                     endpoint_url = st.secrets["endpoint"],
+                     aws_access_key_id = st.secrets[key_prefix+"_key"], 
+                     aws_secret_access_key = st.secrets[key_prefix+"_secret"],
+                     endpoint_url = st.secrets[key_prefix+"_endpoint"],
                      )
 
     # grab photo names from bucket, but parse down to between open/close dates first 1000 files.
     image_show = []
-    prefix = owner + "/" + site + "/photos/"
+    if owner == "": prefix = site + "/photos/"
+    else: prefix = owner + "/" + site + "/photos/"
     images = idrive.list_objects_v2( Bucket=bucket, Prefix=prefix)
     for image in images["Contents"]:
         try:
             filename = image["Key"].replace( prefix, "" )
-            print( filename )
             timestamp = datetime.strptime( filename[:filename.find(".")], '%Y%m%d-%H%M-%S' )
             if timestamp >= open_date and timestamp <= close_date: 
                 image_show.append( filename )
@@ -87,4 +87,4 @@ if __name__ == "__main__":
     #read_idrive( open_date, close_date )
 
     if bot_right.button( "Show Images", use_container_width=True):
-        read_idrive( open_date, close_date, params["bucket"], params["owner"], params["site"], params["dtype"] )
+        read_idrive( open_date, close_date, params["key_prefix"], params["bucket"], params["owner"], params["site"], params["dtype"] )

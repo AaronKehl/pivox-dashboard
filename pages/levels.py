@@ -3,14 +3,17 @@ from datetime import datetime, timedelta
 import streamlit as st
 import pandas as pd
 
-def read_idrive( bucket="pivox", owner="boise", site="freeman", dtype="" ):
+def read_idrive( key_prefix="idrive", bucket="pivox", owner="boise", site="freeman", dtype="" ):
     idrive = boto3.client( "s3", 
-                     aws_access_key_id = st.secrets["key"], 
-                     aws_secret_access_key = st.secrets["secret"],
-                     endpoint_url = st.secrets["endpoint"],
+                     aws_access_key_id = st.secrets[key_prefix+"_key"], 
+                     aws_secret_access_key = st.secrets[key_prefix+"_secret"],
+                     endpoint_url = st.secrets[key_prefix+"_endpoint"],
                      )
-        
-    data = idrive.get_object( Bucket=bucket, Key=owner+"/"+site+"/telemetry/"+site+"-master-"+dtype+".csv.gz" )
+    
+    if owner == "":
+        data = idrive.get_object( Bucket=bucket, Key=site+"/telemetry/"+site+"-master-"+dtype+".csv.gz" )
+    else:
+        data = idrive.get_object( Bucket=bucket, Key=owner+"/"+site+"/telemetry/"+site+"-master-"+dtype+".csv.gz" )
     contents = gzip.decompress( data['Body'].read() ).decode( 'iso8859_2' )
     return contents
 
@@ -124,7 +127,7 @@ if __name__ == "__main__":
 
     if params["dtype"] != "":
         # Grab z Level data from master file.
-        data = read_idrive( params["bucket"], params["owner"], params["site"], params["dtype"] )
+        data = read_idrive( params["key_prefix"], params["bucket"], params["owner"], params["site"], params["dtype"] )
         csvfile = io.StringIO( data )
         reader = csv.DictReader( csvfile, delimiter="," )
         var_names = reader.fieldnames
