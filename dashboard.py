@@ -40,7 +40,7 @@ if __name__ == "__main__":
         dtype = nested_jsons[ page_names[index] ]["dtype"]
 
         unit = page_names[index]
-        tile = col.container(height=180)
-        tile.page_link( "pages/telemetry.py", label=page_names[index], query_params=nested_jsons[page_names[index]] )
-        tile.image( "img/"+owner+"-"+site+".png" )
+        tile = col.container(height=185, vertical_alignment="top", horizontal_alignment="center" )
+        tile.page_link( "pages/telemetry.py", label=page_names[index], width="stretch",query_params=nested_jsons[page_names[index]] )
+        tile.image( "img/"+owner+"-"+site+".png", width="stretch")
         index += 1

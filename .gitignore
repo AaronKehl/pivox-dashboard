@@ -166,3 +166,4 @@ cython_debug/
 secrets.toml
 st-sites.json
 test.py
+requirements.txt

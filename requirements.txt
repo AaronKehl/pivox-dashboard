@@ -3,3 +3,6 @@ boto3
 s3fs
 st-files-connection
 opencv-python-headless
+matplotlib
+numpy
+altair

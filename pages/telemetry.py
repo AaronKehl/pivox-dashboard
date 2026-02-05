@@ -4,6 +4,7 @@ import gzip
 from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 import boto3
 import io
 
@@ -32,6 +33,105 @@ def screen_data( variable, value ):
             data_passes = True      
     except: pass
     return data_passes
+
+def gen_chart_spec( y_names, y_units ):
+    if len( y_names ) > 1: 
+        return_json = {
+            "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+            "encoding": {
+                "x":{ "field":"Timestamp", "type":"temporal","axis":{"format":"%m/%d %H:%M","labelAngle":-90,"title":"Timestamp [mm/dd HH:MM]"}},
+            },
+            "layer": [{
+                "mark":{"type": "line", "color": "#4682b4", "point": {"size":50,"filled":False,"color": "#4682b4" }},
+                "encoding":{
+                    "y":{ "field":y_names[0],"type":"quantitative","scale":{"zero":False},"axis":{"title":y_names[0]+" ["+y_units[0]+"]", "titleColor": "#4682b4" }}
+                },
+                "layer":[{"mark":{ "type": "line", "color": "#4682b4", "point": {"size":50,"filled":False,"color": "#4682b4" }}},{"transform": [{ "filter":{ "param": "hover", "empty": False }}],"mark":"point" }],
+            },
+            {
+                "mark":{"type": "line", "color": "#168b3d", "point": {"size":50,"filled":False,"color": "#168b3d" }},
+                "encoding":{
+                     "y":{ "field":y_names[1],"type":"quantitative","scale":{"zero":False},"axis":{"title":y_names[1]+" ["+y_units[1]+"]", "titleColor": "#168b3d" }}
+                },
+                "layer":[{"mark":{ "type": "line", "color": "#168b3d", "point": {"size":50,"filled":False,"color": "#168b3d" }}},{"transform": [{ "filter":{ "param": "hover", "empty": False }}],"mark":"point" }],
+            },
+            {
+                "transform": [{"field": y_names[0], "type": "quantitative" },{"field": y_names[1], "type": "quantitative" }],
+                "mark": "rule",
+                "encoding": { 
+                    "opacity": { "condition": {"value": 0.3, "param":"hover", "empty": False }, "value":0 }, 
+                    "tooltip": [ 
+                        { "field": "Timestamp", "type": "temporal", "format":"%Y/%m/%d %H:%M:%S", "nearest": True },
+                        { "field": y_names[0], "type": "quantitative" },
+                        { "field": y_names[1], "type": "quantitative" }
+                    ]
+                },
+                "params":[
+                {
+                    "name": "hover",
+                    "select": {
+                        "type": "point",
+                        "fields": ["Timestamp"],
+                        "nearest": True,
+                        "on": "pointerover",
+                        "clear": "pointerout"
+                    }
+                },
+                {
+                    "name": "grid",
+                    "select": "interval",
+                    "bind": "scales"
+                }]
+            }],
+            "resolve": {"scale": {"y": "independent"}}
+        }
+
+    else: 
+        return_json = {
+            "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+            "encoding": {
+                "x":{
+                    "field":"Timestamp", 
+                    "type":"temporal", 
+                    "axis":{"format":"%m/%d %H:%M","labelAngle":-90,"title":"Timestamp [mm/dd HH:MM]"}
+                }
+            },
+            "layer": [
+                {
+                    "encoding": { "y":{ "field":y_names[0],"type":"quantitative","scale":{"zero":False},"axis":{"title":y_names[0]+" ["+y_units[0]+"]"} } },
+                    "layer":[{"mark":{ "type": "line", "point": True }},{"transform": [{ "filter":{ "param": "hover", "empty": False }}], "mark": "point" }]
+                },
+                {
+                    "transform": [{"field": y_names[0], "type": "quantitative" }],
+                    "mark": "rule",
+                    "encoding": { 
+                        "opacity": { "condition": {"value": 0.3, "param":"hover", "empty": False }, "value":0 }, 
+                        "tooltip": [ 
+                            { "field": "Timestamp", "type": "temporal", "format":"%Y/%m/%d %H:%M:%S", "nearest": True },
+                            { "field": y_names[0], "type": "quantitative" }
+                        ]
+                    },
+                    "params":[
+                        {
+                            "name": "hover",
+                            "select": {
+                                "type": "point",
+                               "fields": ["Timestamp"],
+                               "nearest": True,
+                               "on": "pointerover",
+                               "clear": "pointerout"
+                            }
+                        },
+                        {
+                            "name": "grid",
+                            "select": "interval",
+                            "bind": "scales"
+                        }
+                    ]
+                }
+            ] 
+        }
+    return return_json
 
 def plot_chart( data, plot_var_1="", plot_var_2="" , open_date="", close_date=""):
     if open_date is None or open_date == "": open_date = datetime( 2020, 3, 9, 0, 0, 0)
@@ -72,9 +172,15 @@ def plot_chart( data, plot_var_1="", plot_var_2="" , open_date="", close_date=""
                 row_pos += 1
             data = { "Timestamp": x, plot_var_1: y1, plot_var_2: y2 }
             data_frame = pd.DataFrame( data )
-            st.line_chart( data_frame, x="Timestamp", y=[plot_var_1, plot_var_2], width="stretch", height="stretch")
-            
-        elif plot_var_1 != "":
+            #st.line_chart( data_frame, x="Timestamp", y=[plot_var_1, plot_var_2], width="stretch", height="stretch")
+            st.vega_lite_chart(
+                data_frame,
+                gen_chart_spec( [plot_var_1,plot_var_2], [y1_units,y2_units] ),
+                width='stretch',
+                height=500,
+            )
+
+        elif plot_var_1 != "" and plot_var_2 == "":
             y1=[]
             for row in reader:
                 if row_pos == 0:
@@ -93,9 +199,15 @@ def plot_chart( data, plot_var_1="", plot_var_2="" , open_date="", close_date=""
                 row_pos += 1
             data = { "Timestamp": x, plot_var_1: y1 }
             data_frame = pd.DataFrame( data )
-            st.line_chart( data_frame, x="Timestamp", y=plot_var_1, width="stretch", height="stretch" )
-            
-        else:
+            #st.line_chart( data_frame, x="Timestamp", y=plot_var_1, width="stretch", height="stretch" )
+            st.vega_lite_chart(
+                data_frame,
+                gen_chart_spec( [plot_var_1], [y1_units] ),
+                width='stretch',
+                height=500,
+            )
+
+        elif plot_var_2 != "" and plot_var_1 == "":
             y2=[]
             for row in reader:
                 if row_pos == 0:
@@ -105,7 +217,7 @@ def plot_chart( data, plot_var_1="", plot_var_2="" , open_date="", close_date=""
                     try:
                         timestamp = datetime.strptime( row[ var_names[0] ] +" "+ row[ var_names[1] ], "%Y/%m/%d %H:%M:%S" )
                         if timestamp >= open_date and timestamp <= close_date:
-                            try: y2_val = float( row[ plot_var_1 ] )
+                            try: y2_val = float( row[ plot_var_2 ] )
                             except: y2_val = row[ plot_var_2 ]
                             if screen_data( row[ plot_var_2 ], y2_val ):
                                 x.append( timestamp )
@@ -114,7 +226,15 @@ def plot_chart( data, plot_var_1="", plot_var_2="" , open_date="", close_date=""
                 row_pos += 1
             data = { "Timestamp": x, plot_var_2: y2 }
             data_frame = pd.DataFrame( data )
-            st.line_chart( data_frame, x="Timestamp", y=plot_var_2, width="stretch", height="stretch" )
+            #st.line_chart( data_frame, x="Timestamp", y=plot_var_2, width="stretch", height="stretch" )
+            st.vega_lite_chart(
+                data_frame,
+                gen_chart_spec( [plot_var_2], [y2_units] ),
+                width='stretch',
+                height=500,
+            )
+        
+        else: pass
 
 if __name__ == "__main__":
     params = st.query_params
