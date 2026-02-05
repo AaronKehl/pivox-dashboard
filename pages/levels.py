@@ -40,18 +40,18 @@ def gen_chart_spec( y_names, y_units ):
                 "x":{ "field":"Timestamp", "type":"temporal","axis":{"format":"%m/%d %H:%M","labelAngle":-90,"title":"Timestamp [mm/dd HH:MM]"}},
             },
             "layer": [{
-                "mark":{"type": "line", "color": "#4682b4", "point": {"size":50,"filled":False,"color": "#4682b4" }},
+                "mark":{"type": "line", "color": "#4682b4", "point": {"size":10,"filled":False,"color": "#4682b4" }},
                 "encoding":{
                     "y":{ "field":y_names[0],"type":"quantitative","scale":{"zero":False},"axis":{"title":y_names[0]+" ["+y_units[0]+"]", "titleColor": "#4682b4" }}
                 },
-                "layer":[{"mark":{ "type": "line", "color": "#4682b4", "point": {"size":50,"filled":False,"color": "#4682b4" }}},{"transform": [{ "filter":{ "param": "hover", "empty": False }}],"mark":"point" }],
+                "layer":[{"mark":{ "type": "line", "color": "#4682b4", "point": {"size":10,"filled":False,"color": "#4682b4" }}},{"transform": [{ "filter":{ "param": "hover", "empty": False }}],"mark":"point" }],
             },
             {
-                "mark":{"type": "line", "color": "#168b3d", "point": {"size":50,"filled":False,"color": "#168b3d" }},
+                "mark":{"type": "line", "color": "#168b3d", "point": {"size":10,"filled":False,"color": "#168b3d" }},
                 "encoding":{
                      "y":{ "field":y_names[1],"type":"quantitative","scale":{"zero":False},"axis":{"title":y_names[1]+" ["+y_units[1]+"]", "titleColor": "#168b3d" }}
                 },
-                "layer":[{"mark":{ "type": "line", "color": "#168b3d", "point": {"size":50,"filled":False,"color": "#168b3d" }}},{"transform": [{ "filter":{ "param": "hover", "empty": False }}],"mark":"point" }],
+                "layer":[{"mark":{ "type": "line", "color": "#168b3d", "point": {"size":10,"filled":False,"color": "#168b3d" }}},{"transform": [{ "filter":{ "param": "hover", "empty": False }}],"mark":"point" }],
             },
             {
                 "transform": [{"field": y_names[0], "type": "quantitative" },{"field": y_names[1], "type": "quantitative" }],
@@ -97,7 +97,7 @@ def gen_chart_spec( y_names, y_units ):
             "layer": [
                 {
                     "encoding": { "y":{ "field":y_names[0],"type":"quantitative","scale":{"zero":False},"axis":{"title":y_names[0]+" ["+y_units[0]+"]"} } },
-                    "layer":[{"mark":{ "type": "line", "point": True }},{"transform": [{ "filter":{ "param": "hover", "empty": False }}], "mark": "point" }]
+                    "layer":[{"mark":{ "type": "line", "point": {"size":10, "filled":False} }},{"transform": [{ "filter":{ "param": "hover", "empty": False }}], "mark": "point" }]
                 },
                 {
                     "transform": [{"field": y_names[0], "type": "quantitative" }],
