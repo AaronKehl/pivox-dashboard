@@ -62,11 +62,12 @@ def read_idrive( open_date="", close_date="", key_prefix="idrive", bucket="pivox
     # here is where we grab the file contents to display on the page
     index = 0
     for col in row_data:
-        tile = col.container(height=180)
+        tile = col.container(height=185, vertical_alignment="top",horizontal_alignment="center", gap="xxsmall")
         data = idrive.get_object( Bucket=bucket, Key=prefix+image_show[index] )
         image_file = data['Body'].read()
         caption = image_show[index][:image_show[index].find(".")]
-        tile.image( image_file, caption )
+        tile.text( caption, text_alignment="center" )
+        tile.image( image_file )
         index += 1
 
 if __name__ == "__main__":
