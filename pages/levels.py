@@ -198,8 +198,6 @@ def plot_chart( data, plot_var_1="", plot_var_2="" , open_date="", close_date=""
             data = { "Timestamp": x, plot_var_1: y1 }
             data_frame = pd.DataFrame( data )
             #st.line_chart( data_frame, x="Timestamp", y=plot_var_1, height='stretch', width='stretch' )
-            spec = gen_chart_spec( [plot_var_1], [y1_units]  )
-            print( spec )
             st.vega_lite_chart(
                 data_frame,
                 gen_chart_spec( [plot_var_1], [y1_units] ),
