@@ -96,6 +96,7 @@ def gen_chart_spec( y_names, y_units ):
             },
             "layer": [
                 {
+                    "mark":{"type": "line", "point": {"size":10,"filled":False }},
                     "encoding": { "y":{ "field":y_names[0],"type":"quantitative","scale":{"zero":False},"axis":{"title":y_names[0]+" ["+y_units[0]+"]"} } },
                     "layer":[{"mark":{ "type": "line", "point": {"size":10, "filled":False} }},{"transform": [{ "filter":{ "param": "hover", "empty": False }}], "mark": "point" }]
                 },
