@@ -41,17 +41,18 @@ def gen_chart_spec( y_names, y_units ):
             "encoding": {
                 "x":{ "field":"Timestamp", "type":"temporal","axis":{"format":"%m/%d %H:%M","labelAngle":-90,"title":"Timestamp [mm/dd HH:MM]"}},
             },
-            "layer": [{
+            "layer": [
+            {
                 "mark":{"type": "line", "color": "#4682b4", "point": {"size":10,"filled":False,"color": "#4682b4" }},
                 "encoding":{
-                    "y":{ "field":y_names[0],"type":"quantitative","scale":{"zero":False},"axis":{"title":y_names[0]+" ["+y_units[0]+"]", "titleColor": "#4682b4" }}
+                    "y":{ "field":y_names[0],"type":"quantitative","scale":{"zero":False},"axis":{"title":y_names[0]+" ["+y_units[0]+"]", "titleColor": "#4682b4" }},
                 },
                 "layer":[{"mark":{ "type": "line", "color": "#4682b4", "point": {"size":10,"filled":False,"color": "#4682b4" }}},{"transform": [{ "filter":{ "param": "hover", "empty": False }}],"mark":"point" }],
             },
             {
                 "mark":{"type": "line", "color": "#168b3d", "point": {"size":10,"filled":False,"color": "#168b3d" }},
                 "encoding":{
-                     "y":{ "field":y_names[1],"type":"quantitative","scale":{"zero":False},"axis":{"title":y_names[1]+" ["+y_units[1]+"]", "titleColor": "#168b3d" }}
+                    "y":{ "field":y_names[1],"type":"quantitative","scale":{"zero":False},"axis":{"title":y_names[1]+" ["+y_units[1]+"]", "titleColor": "#168b3d" }}
                 },
                 "layer":[{"mark":{ "type": "line", "color": "#168b3d", "point": {"size":10,"filled":False,"color": "#168b3d" }}},{"transform": [{ "filter":{ "param": "hover", "empty": False }}],"mark":"point" }],
             },
@@ -83,54 +84,48 @@ def gen_chart_spec( y_names, y_units ):
                     "bind": "scales"
                 }]
             }],
-            "resolve": {"scale": {"y": "independent"}}
+            "resolve":{ "scale":{"y":"independent"}}
         }
 
     else: 
         return_json = {
             "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
             "encoding": {
-                "x":{
-                    "field":"Timestamp", 
-                    "type":"temporal", 
-                    "axis":{"format":"%m/%d %H:%M","labelAngle":-90,"title":"Timestamp [mm/dd HH:MM]"}
-                }
+                "x":{"field":"Timestamp","type":"temporal","axis":{"format":"%m/%d %H:%M","labelAngle":-90,"title":"Timestamp [mm/dd HH:MM]"}},
+                "y":{"field":y_names[0],"type":"quantitative","scale":{"zero":False},"axis":{"title":y_names[0]+" ["+y_units[0]+"]"}}
             },
             "layer": [
+            {
+                "mark":{"type": "line", "point": {"size":10,"filled":False }},
+                "encoding": { "y":{ "field":y_names[0],"type":"quantitative","scale":{"zero":False},"axis":{"title":y_names[0]+" ["+y_units[0]+"]"} } },
+                "layer":[{"mark":{ "type": "line", "point": {"size":10, "filled":False} }},{"transform": [{ "filter":{ "param": "hover", "empty": False }}], "mark": "point" }]                },
+            {
+                "transform": [{"field": y_names[0], "type": "quantitative" }],
+                "mark": "rule",
+                "encoding": { 
+                    "opacity": { "condition": {"value": 0.3, "param":"hover", "empty": False }, "value":0 }, 
+                    "tooltip": [ 
+                        { "field": "Timestamp", "type": "temporal", "format":"%Y/%m/%d %H:%M:%S", "nearest": True },
+                        { "field": y_names[0], "type": "quantitative" }
+                    ]
+                },
+                "params":[
                 {
-                    "mark":{"type": "line", "point": {"size":10,"filled":False }},
-                    "encoding": { "y":{ "field":y_names[0],"type":"quantitative","scale":{"zero":False},"axis":{"title":y_names[0]+" ["+y_units[0]+"]"} } },
-                    "layer":[{"mark":{ "type": "line", "point": {"size":10,"filled":False} }},{"transform": [{ "filter":{ "param": "hover", "empty": False }}], "mark": "point" }]
+                    "name": "hover",
+                    "select": {
+                        "type": "point",
+                       "fields": ["Timestamp"],
+                       "nearest": True,
+                       "on": "pointerover",
+                       "clear": "pointerout"
+                    }
                 },
                 {
-                    "transform": [{"field": y_names[0], "type": "quantitative" }],
-                    "mark": "rule",
-                    "encoding": { 
-                        "opacity": { "condition": {"value": 0.3, "param":"hover", "empty": False }, "value":0 }, 
-                        "tooltip": [ 
-                            { "field": "Timestamp", "type": "temporal", "format":"%Y/%m/%d %H:%M:%S", "nearest": True },
-                            { "field": y_names[0], "type": "quantitative" }
-                        ]
-                    },
-                    "params":[
-                        {
-                            "name": "hover",
-                            "select": {
-                                "type": "point",
-                               "fields": ["Timestamp"],
-                               "nearest": True,
-                               "on": "pointerover",
-                               "clear": "pointerout"
-                            }
-                        },
-                        {
-                            "name": "grid",
-                            "select": "interval",
-                            "bind": "scales"
-                        }
-                    ]
-                }
-            ] 
+                    "name": "grid",
+                    "select": "interval",
+                    "bind": "scales"
+                }]
+            }] 
         }
     return return_json
 
