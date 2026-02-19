@@ -1,11 +1,7 @@
-import rasterio, gzip, boto3, io
+import gzip, boto3, io
 import streamlit as st
-import matplotlib.pyplot as plt
 import plotly.express as px
-from plotly.tools import mpl_to_plotly
 import rioxarray as rio
-import rasterio.plot
-import numpy as np
 
 def read_idrive( key_prefix="idrive", bucket="pivox", owner="boise", site="freeman", dtype="", tif_file="" ):
     idrive = boto3.client( "s3", 

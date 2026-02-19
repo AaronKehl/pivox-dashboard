@@ -4,7 +4,4 @@ opencv-python-headless
 matplotlib
 numpy
 pandas
-gzip
-io
-rasterio
-threading
+plotly
