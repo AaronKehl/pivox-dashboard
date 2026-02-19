@@ -235,10 +235,11 @@ if __name__ == "__main__":
     # Set up the bones of the page
     st.set_page_config( page_title=site_name, page_icon="📈" )
     st.write("# " + site_name + " Pivox Z Level 📈")
-    left_link, mid_link, right_link = st.columns(3)
-    left_link.page_link( "dashboard.py", label="Dashboard" )
-    mid_link.page_link( "pages/telemetry.py", label="Telemetry", query_params=params )
-    right_link.page_link( "pages/images.py", label="Images", query_params=params )
+    link_left, link_midl, link_midr, link_right = st.columns(4)
+    link_left.page_link( "dashboard.py", label="Dashboard" )
+    link_midl.page_link( "pages/telemetry.py", label="Telemetry", query_params=params )
+    link_midr.page_link( "pages/images.py", label="Images", query_params=params )
+    link_right.page_link( "pages/dems.py", label="DEMs", query_params=params)
 
     if params["dtype"] != "":
         # Grab z Level data from master file.

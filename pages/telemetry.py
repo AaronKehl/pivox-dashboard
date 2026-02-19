@@ -3,8 +3,6 @@ import csv
 import gzip
 from datetime import datetime, timedelta
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 import boto3
 import io
 
@@ -238,10 +236,11 @@ if __name__ == "__main__":
 
     st.set_page_config( page_title=site_name, page_icon="📋" )
     st.write("# " + site_name + " Pivox Telemetry 📋")
-    left_link, mid_link, right_link = st.columns(3)
-    left_link.page_link( "dashboard.py", label="Dashboard" )
-    mid_link.page_link( "pages/images.py", label="Images", query_params=params )
-    right_link.page_link( "pages/levels.py", label="Z Level", query_params=params )
+    link_left, link_midl, link_midr, link_right = st.columns(4)
+    link_left.page_link( "dashboard.py", label="Dashboard" )
+    link_midl.page_link( "pages/images.py", label="Images", query_params=params )
+    link_midr.page_link( "pages/levels.py", label="Z Level", query_params=params )
+    link_right.page_link( "pages/dems.py", label="DEMs", query_params=params  )
 
     data = read_idrive( params["key_prefix"], params["bucket"], params["owner"], params["site"] )
     csvfile = io.StringIO( data )

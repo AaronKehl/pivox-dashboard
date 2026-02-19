@@ -1,8 +1,10 @@
-streamlit
+streamlit[charts]
 boto3
-s3fs
-st-files-connection
 opencv-python-headless
 matplotlib
 numpy
-altair
+pandas
+gzip
+io
+rasterio
+threading
