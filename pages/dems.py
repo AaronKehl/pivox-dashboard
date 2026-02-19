@@ -8,7 +8,6 @@ def adjust_params( params, tif_file ):
     params.update( { "tif_file":tif_file } )
     return params
 
-@st.cache_data
 def read_idrive( open_date="", close_date="", key_prefix="idrive", bucket="pivox", owner="boise", site="freeman", dtype="" ):
     # fix date range to search
     if open_date is None or open_date == "": open_date = datetime( 2020, 3, 9, 0, 0, 0)
