@@ -33,14 +33,14 @@ def plot_chart( tif_filename, color_label, color_scale, zmin="", zmax="" ):
             fig = px.imshow( 
                 snowdepth, color_continuous_scale = color_scale,
                 title = tif_filename[:-3], origin = 'lower', 
-                zmin = zmin, zmax = zmax, height = 500,
+                zmin = zmin, zmax = zmax,
                 labels = {"color":color_label}, aspect = "auto"
             )
         else:
             fig = px.imshow( 
                 snowdepth, color_continuous_scale=color_scale,
                 title=tif_filename[:-3], origin='lower', 
-                height = 500,labels={"color":color_label}, aspect="auto"
+                labels={"color":color_label}, aspect="auto"
             )
         fig.update_layout( 
             coloraxis_colorbar = {
@@ -120,7 +120,7 @@ if __name__ == "__main__":
         label_visibility="collapsed", 
         horizontal=True 
     )
-    tif_plot = btn_right.button( "Plot DEM", width="stretch" )
+    tif_plot = btn_right.button( "Clear Cache", width="stretch" )
     
     if tif_type == "Regular DEM":
         if tif_color == "Show Colored by Min/Max of Individual Scan":
@@ -135,6 +135,7 @@ if __name__ == "__main__":
             plot_sd_dem_bare(); zmin = -0.2; zmax = 6.0
 
     if tif_plot: 
-        plot_chart.clear(); plot_chart( params, tif_type, tif_color, zmin, zmax )
+        plot_sd_dem_bare.clear(); plot_sd_dem_minmax.clear()
+        plot_reg_dem_bare.clear(); plot_reg_dem_minmax.clear()
 
 
