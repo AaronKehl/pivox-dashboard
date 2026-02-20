@@ -18,129 +18,81 @@ def read_idrive( key_prefix="idrive", bucket="pivox", owner="boise", site="freem
     tif_data = gzip.decompress( data['Body'].read() )
     return tif_data
 
-def gen_chart_spec( y_names, y_units ):
-    if len( y_names ) > 1: 
-        return_json = {
-            "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
-            "encoding": {
-                "x":{ "field":"Timestamp", "type":"temporal","axis":{"format":"%m/%d %H:%M","labelAngle":-90,"title":"Timestamp [mm/dd HH:MM]"}},
-            },
-            "layer": [
-            {
-                "mark":{"type": "line", "color": "#4682b4", "point": {"size":10,"filled":False,"color": "#4682b4" }},
-                "encoding":{
-                    "y":{ "field":y_names[0],"type":"quantitative","scale":{"zero":False},"axis":{"title":y_names[0]+" ["+y_units[0]+"]", "titleColor": "#4682b4" }},
-                },
-                "layer":[{"mark":{ "type": "line", "color": "#4682b4", "point": {"size":10,"filled":False,"color": "#4682b4" }}},{"transform": [{ "filter":{ "param": "hover", "empty": False }}],"mark":"point" }],
-            },
-            {
-                "mark":{"type": "line", "color": "#168b3d", "point": {"size":10,"filled":False,"color": "#168b3d" }},
-                "encoding":{
-                    "y":{ "field":y_names[1],"type":"quantitative","scale":{"zero":False},"axis":{"title":y_names[1]+" ["+y_units[1]+"]", "titleColor": "#168b3d" }}
-                },
-                "layer":[{"mark":{ "type": "line", "color": "#168b3d", "point": {"size":10,"filled":False,"color": "#168b3d" }}},{"transform": [{ "filter":{ "param": "hover", "empty": False }}],"mark":"point" }],
-            },
-            {
-                "transform": [{"field": y_names[0], "type": "quantitative" },{"field": y_names[1], "type": "quantitative" }],
-                "mark": "rule",
-                "encoding": { 
-                    "opacity": { "condition": {"value": 0.3, "param":"hover", "empty": False }, "value":0 }, 
-                    "tooltip": [ 
-                        { "field": "Timestamp", "type": "temporal", "format":"%Y/%m/%d %H:%M:%S", "nearest": True },
-                        { "field": y_names[0], "type": "quantitative" },
-                        { "field": y_names[1], "type": "quantitative" }
-                    ]
-                },
-                "params":[
-                {
-                    "name": "hover",
-                    "select": {
-                        "type": "point",
-                        "fields": ["Timestamp"],
-                        "nearest": True,
-                        "on": "pointerover",
-                        "clear": "pointerout"
-                    }
-                },
-                {
-                    "name": "grid",
-                    "select": "interval",
-                    "bind": "scales"
-                }]
-            }],
-            "resolve":{ "scale":{"y":"independent"}}
-        }
-
-    else: 
-        return_json = {
-            "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
-            "encoding": {
-                "x":{"field":"Timestamp","type":"temporal","axis":{"format":"%m/%d %H:%M","labelAngle":-90,"title":"Timestamp [mm/dd HH:MM]"}},
-                "y":{"field":y_names[0],"type":"quantitative","scale":{"zero":False},"axis":{"title":y_names[0]+" ["+y_units[0]+"]"}}
-            },
-            "layer": [
-            {
-                "mark":{"type": "line", "point": {"size":10,"filled":False }},
-                "encoding": { "y":{ "field":y_names[0],"type":"quantitative","scale":{"zero":False},"axis":{"title":y_names[0]+" ["+y_units[0]+"]"} } },
-                "layer":[{"mark":{ "type": "line", "point": {"size":10, "filled":False} }},{"transform": [{ "filter":{ "param": "hover", "empty": False }}], "mark": "point" }]                },
-            {
-                "transform": [{"field": y_names[0], "type": "quantitative" }],
-                "mark": "rule",
-                "encoding": { 
-                    "opacity": { "condition": {"value": 0.3, "param":"hover", "empty": False }, "value":0 }, 
-                    "tooltip": [ 
-                        { "field": "Timestamp", "type": "temporal", "format":"%Y/%m/%d %H:%M:%S", "nearest": True },
-                        { "field": y_names[0], "type": "quantitative" }
-                    ]
-                },
-                "params":[
-                {
-                    "name": "hover",
-                    "select": {
-                        "type": "point",
-                       "fields": ["Timestamp"],
-                       "nearest": True,
-                       "on": "pointerover",
-                       "clear": "pointerout"
-                    }
-                },
-                {
-                    "name": "grid",
-                    "select": "interval",
-                    "bind": "scales"
-                }]
-            }] 
-        }
-    return return_json
-
-def plot_chart( params, tif_type, tif_color ):
-    if params["tif_file"] != "":
-        # Grab z Level data from master file.
-        # Sort out which tif file we are looking at
-        if tif_type == "Snowdepth DEM":
-            tif_filename = params["tif_file"][:-6] + "DEPTH.tif.gz"
-        else: tif_filename = params["tif_file"]
-
-        tif_data = read_idrive( params["key_prefix"], params["bucket"], params["owner"], params["site"], params["dtype"], tif_filename )
-        tif_file = io.BytesIO( tif_data )
+def plot_chart( tif_filename, color_label, color_scale, zmin="", zmax="" ):
+    
+    tif_data = read_idrive( 
+        params["key_prefix"], params["bucket"], 
+        params["owner"], params["site"], 
+        params["dtype"], tif_filename 
+    )
+    tif_file = io.BytesIO( tif_data )
 
     with rio.open_rasterio( tif_file, masked=True ) as snowdepth:
-        snowdepth = snowdepth.squeeze( "band", drop=True )
-        if tif_color == "Show Colored by Min/Max of Individual Scan":
+        snowdepth = snowdepth.squeeze( "band", drop=True ) 
+        if zmin != "" and zmax != "":
             fig = px.imshow( 
-                snowdepth, 
-                color_continuous_scale="rainbow_r",
-                title=tif_filename[:-3], 
-                origin='lower' )
-        else: 
+                snowdepth, color_continuous_scale = color_scale,
+                title = tif_filename[:-3], origin = 'lower', 
+                zmin = zmin, zmax = zmax, height = 500,
+                labels = {"color":color_label}, aspect = "auto"
+            )
+        else:
             fig = px.imshow( 
-                snowdepth, 
-                color_continuous_scale="rainbow_r",
-                title=tif_filename[:-3], 
-                origin='lower',
-                zmin=-0.2,
-                zmax=6.0 )
-        st.plotly_chart( fig )
+                snowdepth, color_continuous_scale=color_scale,
+                title=tif_filename[:-3], origin='lower', 
+                height = 500,labels={"color":color_label}, aspect="auto"
+            )
+        fig.update_layout( 
+            coloraxis_colorbar = {
+                "thicknessmode":"pixels", "thickness":15,
+                "lenmode":"pixels", "len":350,
+                "title":"", "yanchor":"middle"
+            },
+            xaxis = {"automargin":True}, yaxis = {"automargin":True},
+            #margin = {"r":100},
+            #annotations=[{
+            #    "text":color_label, "textangle":-90,
+            #    "xref":"paper", "yref":"paper",
+            #    "x":1.18, "y":0.5,
+            #}] 
+        )
+        return fig
+
+@st.cache_data
+def plot_reg_dem_bare():
+    tif_filename = params["tif_file"]
+    color_label = "elevation [m]"
+    color_scale = "rainbow_r"
+    zmin = -0.2; zmax = 6.0
+    fig = plot_chart( tif_filename, color_label, color_scale, zmin, zmax )
+    st.plotly_chart( fig )
+
+@st.cache_data
+def plot_reg_dem_minmax():
+    tif_filename = params["tif_file"]
+    color_label = "elevation [m]"
+    color_scale = "rainbow_r"
+    zmin = ""; zmax = ""
+    fig = plot_chart( tif_filename, color_label, color_scale, zmin, zmax )
+    st.plotly_chart( fig )
+
+@st.cache_data
+def plot_sd_dem_bare():
+    tif_filename = params["tif_file"][:-6] + "DEPTH.tif.gz"
+    color_label = "snowdepth [m]"
+    color_scale = "rainbow_r"
+    zmin = -0.2; zmax = 6.0
+    fig = plot_chart( tif_filename, color_label, color_scale, zmin, zmax )
+    st.plotly_chart( fig )
+
+@st.cache_data
+def plot_sd_dem_minmax():
+    tif_filename = params["tif_file"][:-6] + "DEPTH.tif.gz"
+    color_label = "snowdepth [m]"
+    color_scale = "rainbow_r"
+    zmin = ""; zmax = ""
+    fig = plot_chart( tif_filename, color_label, color_scale, zmin, zmax )
+    st.plotly_chart( fig )
 
 if __name__ == "__main__":
     params = st.query_params
@@ -155,15 +107,34 @@ if __name__ == "__main__":
     # Radio buttons for which type we want to view...
     #rad_left, rad_right = st.columns( 2 )
     tif_color = st.radio( " ", 
-                            ["Show Colored by Min/Max of Individual Scan", 
-                             "Show Colored by Reference to Bare Earth"],
-                             label_visibility="collapsed",
-                             horizontal=True
-                            )
+        ["Show Colored by Min/Max of Individual Scan", 
+        "Show Colored by Reference to Bare Earth"],
+        label_visibility="collapsed",
+        horizontal=True
+    )
 
     rad_left, btn_right = st.columns( 2 )
-    tif_type = rad_left.radio( " ", ["Regular DEM", "Snowdepth DEM"], label_visibility="collapsed", horizontal=True)
+    tif_type = rad_left.radio( 
+        " ", 
+        ["Snowdepth DEM", "Regular DEM"], 
+        label_visibility="collapsed", 
+        horizontal=True 
+    )
     tif_plot = btn_right.button( "Plot DEM", width="stretch" )
     
-    if tif_plot: plot_chart( params, tif_type, tif_color )
+    if tif_type == "Regular DEM":
+        if tif_color == "Show Colored by Min/Max of Individual Scan":
+            plot_reg_dem_minmax(); zmin = ""; zmax = ""
+        else: 
+            plot_reg_dem_bare(); zmin = -0.2; zmax = 6.0
+
+    if tif_type == "Snowdepth DEM":
+        if tif_color == "Show Colored by Min/Max of Individual Scan":
+            plot_sd_dem_minmax(); zmin = ""; zmax = ""
+        else: 
+            plot_sd_dem_bare(); zmin = -0.2; zmax = 6.0
+
+    if tif_plot: 
+        plot_chart.clear(); plot_chart( params, tif_type, tif_color, zmin, zmax )
+
 

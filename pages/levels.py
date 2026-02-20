@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import streamlit as st
 import pandas as pd
 
+@ st.cache_data
 def read_idrive( key_prefix="idrive", bucket="pivox", owner="boise", site="freeman", dtype="" ):
     idrive = boto3.client( "s3", 
                      aws_access_key_id = st.secrets[key_prefix+"_key"], 

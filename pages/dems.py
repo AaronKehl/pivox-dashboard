@@ -96,7 +96,7 @@ if __name__ == "__main__":
     # Radio buttons for which type we want to view...
     tgl_left, tgl_right = st.columns( 2 )
     minmax_color = tgl_left.toggle( "Show Colored by Min/Max of Individual Scan" )
-    barearth_color = tgl_right.toggle( "Show Colored by Reference to Bare Earth")
+    barearth_color = tgl_right.toggle( "Show Colored by Reference to Bare Earth" )
     
     st.caption( "Click image title to plot the raster on a chart.", text_alignment='center' )
 
