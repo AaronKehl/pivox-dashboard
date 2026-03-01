@@ -52,7 +52,12 @@ def read_idrive( open_date="", close_date="", key_prefix="idrive", bucket="pivox
             try:
                 filename = image["Key"].replace( prefix, "" )
                 timestamp = datetime.strptime( filename[:filename.find(".")], '%Y%m%d-%H%M-%S' )
-                if timestamp >= open_date and timestamp <= close_date: image_show.append( filename )
+                if timestamp >= open_date and timestamp <= close_date and ".png" in filename: 
+                    if minmax_color:
+                        if "IND" in filename: image_show.append( filename )
+                    if barearth_color:
+                        if "ABS" in filename: image_show.append( filename )
+                    #print( filename )
             except: pass
 
     rows = []
