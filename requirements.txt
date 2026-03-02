@@ -6,3 +6,4 @@ numpy
 pandas
 plotly
 rioxarray
+rasterio

@@ -2,6 +2,8 @@ import gzip, boto3, io
 import streamlit as st
 import plotly.express as px
 import rioxarray as rio
+import rasterio
+import rasterio.fill
 
 def read_idrive( key_prefix="idrive", bucket="pivox", owner="boise", site="freeman", dtype="", tif_file="" ):
     idrive = boto3.client( "s3", 
@@ -28,7 +30,12 @@ def plot_chart( tif_filename, color_label, color_scale, zmin="", zmax="" ):
     tif_file = io.BytesIO( tif_data )
 
     with rio.open_rasterio( tif_file, masked=True ) as snowdepth:
+    #with rasterio.open( tif_file ) as snowdepth:
+        #extent = ( snowdepth.bounds.left, snowdepth.bounds.right, snowdepth.bounds.bottom, snowdepth.bounds.top )
         snowdepth = snowdepth.squeeze( "band", drop=True ) 
+        #snowdepth = snowdepth.read( 1, masked=True )
+        #snowdepth = rasterio.fill.fillnodata( snowdepth, mask=None, max_search_distance=6,smoothing_iterations=0)
+                
         if zmin != "" and zmax != "":
             fig = px.imshow( 
                 snowdepth, color_continuous_scale = color_scale,
@@ -107,8 +114,8 @@ if __name__ == "__main__":
     # Radio buttons for which type we want to view...
     #rad_left, rad_right = st.columns( 2 )
     tif_color = st.radio( " ", 
-        ["Show Colored by Min/Max of Individual Scan", 
-        "Show Colored by Reference to Bare Earth"],
+        [   "Show Colored by Reference to Bare Earth",
+            "Show Colored by Min/Max of Individual Scan"],
         label_visibility="collapsed",
         horizontal=True
     )
