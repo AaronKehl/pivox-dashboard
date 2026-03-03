@@ -24,6 +24,7 @@ def read_idrive( open_date="", close_date="", key_prefix="idrive", bucket="pivox
 
     # grab photo names from bucket, but parse down to between open/close dates first 1000 files.
     image_show = []
+    msg_printed = False
     if owner == "": prefix = site + "/dems/"
     else: prefix = owner + "/" + site + "/dems/"
     images = idrive.list_objects_v2( Bucket=bucket, Prefix=prefix)
@@ -36,6 +37,12 @@ def read_idrive( open_date="", close_date="", key_prefix="idrive", bucket="pivox
                     if "IND" in filename: image_show.append( filename )
                 if barearth_color:
                     if "ABS" in filename: image_show.append( filename )
+                if not barearth_color and not minmax_color:
+                    if not msg_printed:
+                        st.caption( "You did not select a color mapping preference, defaulting to show colored by reference to bare earth.", text_alignment='center' )
+                        msg_printed = True
+                    if "ABS" in filename: image_show.append( filename )
+
                 #print( filename )
         except: pass
             #idrive.delete_object( Bucket="pivox", Key="/boise/freeman/photos/"+"", IfMatchSize=0 )
@@ -56,6 +63,11 @@ def read_idrive( open_date="", close_date="", key_prefix="idrive", bucket="pivox
                     if minmax_color:
                         if "IND" in filename: image_show.append( filename )
                     if barearth_color:
+                        if "ABS" in filename: image_show.append( filename )
+                    if not barearth_color and not minmax_color:
+                        if not msg_printed:
+                            st.caption( "You did not select a color mapping preference, defaulting to show colored by reference to bare earth.", text_alignment='center' )
+                            msg_printed = True
                         if "ABS" in filename: image_show.append( filename )
                     #print( filename )
             except: pass
