@@ -4,6 +4,8 @@ import plotly.express as px
 import rioxarray as rio
 import rasterio
 import rasterio.fill
+import xarray as xr
+from datetime import datetime
 
 def read_idrive( key_prefix="idrive", bucket="pivox", owner="boise", site="freeman", dtype="", tif_file="" ):
     idrive = boto3.client( "s3", 
@@ -28,47 +30,47 @@ def plot_chart( tif_filename, color_label, color_scale, zmin="", zmax="" ):
         params["dtype"], tif_filename 
     )
     tif_file = io.BytesIO( tif_data )
+    #with rasterio.open( tif_file ) as snowdepth:
+    #    sd_mask = snowdepth.read_masks( 1 )
 
     with rio.open_rasterio( tif_file, masked=True ) as snowdepth:
-    #with rasterio.open( tif_file ) as snowdepth:
-        #extent = ( snowdepth.bounds.left, snowdepth.bounds.right, snowdepth.bounds.bottom, snowdepth.bounds.top )
-        snowdepth = snowdepth.squeeze( "band", drop=True ) 
-        #snowdepth = snowdepth.read( 1, masked=True )
-        #snowdepth = rasterio.fill.fillnodata( snowdepth, mask=None, max_search_distance=6,smoothing_iterations=0)
-                
-        if zmin != "" and zmax != "":
-            fig = px.imshow( 
-                snowdepth, color_continuous_scale = color_scale,
-                title = tif_filename[:-3], origin = 'lower', 
-                zmin = zmin, zmax = zmax,
-                labels = {"color":color_label}, aspect = "auto"
-            )
-        else:
-            fig = px.imshow( 
-                snowdepth, color_continuous_scale=color_scale,
-                title=tif_filename[:-3], origin='lower', 
-                labels={"color":color_label}, aspect="auto"
-            )
-        fig.update_layout( 
-            coloraxis_colorbar = {
-                "thicknessmode":"pixels", "thickness":15,
-                "lenmode":"pixels", "len":350,
-                "title":"", "yanchor":"middle"
-            },
-            xaxis = {"automargin":True}, yaxis = {"automargin":True},
+        snowdepth = snowdepth.squeeze( "band", drop=True )
+        #vals_interp = rasterio.fill.fillnodata( snowdepth, mask=sd_mask, max_search_distance=6,smoothing_iterations=0)
+        #snowdepth = xr.DataArray( vals_interp, coords={'y':snowdepth.y,'x':snowdepth.x},dims=('y','x'))
+
+    if zmin != "" and zmax != "":
+        fig = px.imshow( 
+            snowdepth, color_continuous_scale = color_scale,
+            title = tif_filename[:-3], origin = 'lower', 
+            zmin = zmin, zmax = zmax,
+            labels = {"color":color_label}, aspect = "auto"
+        )
+    else:
+        fig = px.imshow( 
+            snowdepth, color_continuous_scale=color_scale,
+            title=tif_filename[:-3], origin='lower', 
+            labels={"color":color_label}, aspect="auto"
+        )
+    fig.update_layout( 
+        coloraxis_colorbar = {
+            "thicknessmode":"pixels", "thickness":15,
+            "lenmode":"pixels", "len":350,
+            "title":"", "yanchor":"middle"
+        },
+        xaxis = {"automargin":True}, yaxis = {"automargin":True},
             #margin = {"r":100},
             #annotations=[{
             #    "text":color_label, "textangle":-90,
             #    "xref":"paper", "yref":"paper",
             #    "x":1.18, "y":0.5,
             #}] 
-        )
-        return fig
+    )
+    return fig
 
 @st.cache_data
 def plot_reg_dem_bare():
     tif_filename = params["tif_file"]
-    color_label = "elevation [m]"
+    color_label = "elevation []"
     color_scale = "rainbow_r"
     zmin = -0.2; zmax = 6.0
     fig = plot_chart( tif_filename, color_label, color_scale, zmin, zmax )
@@ -77,7 +79,7 @@ def plot_reg_dem_bare():
 @st.cache_data
 def plot_reg_dem_minmax():
     tif_filename = params["tif_file"]
-    color_label = "elevation [m]"
+    color_label = "elevation []"
     color_scale = "rainbow_r"
     zmin = ""; zmax = ""
     fig = plot_chart( tif_filename, color_label, color_scale, zmin, zmax )
@@ -86,7 +88,7 @@ def plot_reg_dem_minmax():
 @st.cache_data
 def plot_sd_dem_bare():
     tif_filename = params["tif_file"][:-6] + "DEPTH.tif.gz"
-    color_label = "snowdepth [m]"
+    color_label = "snowdepth []"
     color_scale = "rainbow_r"
     zmin = -0.2; zmax = 6.0
     fig = plot_chart( tif_filename, color_label, color_scale, zmin, zmax )
@@ -95,7 +97,7 @@ def plot_sd_dem_bare():
 @st.cache_data
 def plot_sd_dem_minmax():
     tif_filename = params["tif_file"][:-6] + "DEPTH.tif.gz"
-    color_label = "snowdepth [m]"
+    color_label = "snowdepth []"
     color_scale = "rainbow_r"
     zmin = ""; zmax = ""
     fig = plot_chart( tif_filename, color_label, color_scale, zmin, zmax )
