@@ -66,7 +66,7 @@ def plot_chart( tif_filename, color_label, zvals = False ):
         if chart_spec["interp_val"] != 0:
             vals_interp = rasterio.fill.fillnodata( 
                 snowdepth, 
-                mask=sd_mask, 
+                mask = sd_mask, 
                 max_search_distance = chart_spec["interp_val"],
                 smoothing_iterations = chart_spec["smooth_val"] 
             )
@@ -131,28 +131,28 @@ def plot_chart( tif_filename, color_label, zvals = False ):
 @st.cache_data
 def plot_reg_dem_bare():
     tif_filename = params["tif_file"]
-    color_label = "elevation"
+    color_label = "Elevation"
     fig = plot_chart( tif_filename, color_label, zvals = True )
     st.plotly_chart( fig )
 
 @st.cache_data
 def plot_reg_dem_minmax():
     tif_filename = params["tif_file"]
-    color_label = "elevation"
+    color_label = "Elevation"
     fig = plot_chart( tif_filename, color_label )
     st.plotly_chart( fig )
 
 @st.cache_data
 def plot_sd_dem_bare():
     tif_filename = params["tif_file"][:-6] + "DEPTH.tif.gz"
-    color_label = "snowdepth"
+    color_label = "Snowdepth"
     fig = plot_chart( tif_filename, color_label, zvals = True )
     st.plotly_chart( fig )
 
 @st.cache_data
 def plot_sd_dem_minmax():
     tif_filename = params["tif_file"][:-6] + "DEPTH.tif.gz"
-    color_label = "snowdepth"
+    color_label = "Snowdepth"
     fig = plot_chart( tif_filename, color_label )
     st.plotly_chart( fig )
 
