@@ -19,7 +19,11 @@ def read_idrive( open_date="", close_date="", key_prefix="idrive", bucket="pivox
     # grab photo names from bucket, but parse down to between open/close dates first 1000 files.
     image_show = []
     if owner == "": prefix = site + "/photos/"
-    else: prefix = owner + "/" + site + "/photos/"
+    else: 
+        if key_prefix == "grid":
+            prefix = "pivox/" + owner + "/" + site + "/photos/"
+        else: 
+            prefix = owner + "/" + site + "/photos/"
     images = idrive.list_objects_v2( Bucket=bucket, Prefix=prefix)
     for image in images["Contents"]:
         try:

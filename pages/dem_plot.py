@@ -27,7 +27,11 @@ def read_idrive( key_prefix="idrive", bucket="pivox", owner="boise", site="freem
     
     if chart:
         if owner == "": prefix = site + "/" + site
-        else: prefix = owner + "/" + site + "/" + site
+        else: 
+            if key_prefix == "grid":
+                prefix = "pivox/" + owner + "/" + site + "/" + site
+            else: 
+                prefix = owner + "/" + site + "/" + site
         try: 
             data = idrive.get_object( Bucket=bucket, Key=prefix+"-chart-spec.json" )
             chart_spec = json.loads( data['Body'].read() )

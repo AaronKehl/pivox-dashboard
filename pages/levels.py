@@ -14,7 +14,10 @@ def read_idrive( key_prefix="idrive", bucket="pivox", owner="boise", site="freem
     if owner == "":
         data = idrive.get_object( Bucket=bucket, Key=site+"/telemetry/"+site+"-master-"+dtype+".csv.gz" )
     else:
-        data = idrive.get_object( Bucket=bucket, Key=owner+"/"+site+"/telemetry/"+site+"-master-"+dtype+".csv.gz" )
+        if key_prefix == "grid":
+            data = idrive.get_object( Bucket=bucket, Key="pivox/"+owner+"/"+site+"/telemetry/"+site+"-master"+dtype+".csv.gz" )
+        else:
+            data = idrive.get_object( Bucket=bucket, Key=owner+"/"+site+"/telemetry/"+site+"-master"+dtype+".csv.gz" )
     contents = gzip.decompress( data['Body'].read() ).decode( 'iso8859_2' )
     return contents
 

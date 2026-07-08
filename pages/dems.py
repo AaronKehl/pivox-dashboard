@@ -26,7 +26,11 @@ def read_idrive( open_date="", close_date="", key_prefix="idrive", bucket="pivox
     image_show = []
     msg_printed = False
     if owner == "": prefix = site + "/dems/"
-    else: prefix = owner + "/" + site + "/dems/"
+    else: 
+        if key_prefix == "grid":
+            prefix = "pivox/" + owner + "/" + site + "/dems/"
+        else:
+            prefix = owner + "/" + site + "/dems/"
     images = idrive.list_objects_v2( Bucket=bucket, Prefix=prefix)
     for image in images["Contents"]:
         try:
